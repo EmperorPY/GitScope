@@ -1,10 +1,8 @@
-import os
+import os #IMPORTS
 import webbrowser
 import requests
 import customtkinter as ctk
 from PIL import Image
-
-ctk.set_appearance_mode("dark")
 
 root = ctk.CTk()
 root.title("GitScope")
@@ -12,11 +10,11 @@ root.configure(fg_color="black")
 
 screen_width = root.winfo_screenwidth()
 screen_height = root.winfo_screenheight()
-root.geometry(f"{screen_width}x{screen_height}+0+0")
+root.geometry(f"{screen_width}x{screen_height}+0+0") # Sets screen dimensions and height.
 
 
 # LOGO
-logo_image = Image.open(os.path.join(os.path.dirname(__file__), "logo.png"))
+logo_image = Image.open(os.path.join(os.path.dirname(__file__), "logo.png")) # Opens the logo image.
 logo = ctk.CTkImage(
     light_image=logo_image,
     dark_image=logo_image,
@@ -26,7 +24,7 @@ logo = ctk.CTkImage(
 
 # TITLE AND WELCOME MESSAGE
 title_frame = ctk.CTkFrame(root, fg_color="transparent")
-title_frame.pack(pady=(10, 0))
+title_frame.pack(pady=(10, 0)) #10 pixexls above the title and 0 below it.
 
 title = ctk.CTkLabel(
     title_frame,
@@ -57,12 +55,12 @@ search_frame = ctk.CTkFrame(
     root,
     width=400,
     height=775,
-    fg_color="#111111",
+    fg_color="transparent", # Sets background color.
     border_color="white",
     border_width=2
 )
 search_frame.place(x=10, y=10)
-search_frame.pack_propagate(False)
+search_frame.pack_propagate(False) # Makes it so the frame doesn't change size based on the widgets inside it.
 
 search_title = ctk.CTkLabel(
     search_frame,
@@ -70,7 +68,7 @@ search_title = ctk.CTkLabel(
     font=("Orbitron", 25),
     text_color="white"
 )
-search_title.pack(pady=(25, 20))
+search_title.pack(pady=(25, 20)) # 25 pixels of space on the top and 20 on the bottom.
 
 description = ctk.CTkLabel(
     search_frame,
@@ -85,17 +83,17 @@ description = ctk.CTkLabel(
     ),
     font=("Arial", 16),
     text_color="white",
-    wraplength=350,
-    justify="left"
+    wraplength=350, # Makes the text wrap back around when it reaches 350 pixels wide.
+    justify="left"# Justify aligns the lines of text relative to each other.
 )
 description.pack(pady=20)
 
 username_entry = ctk.CTkEntry(
     search_frame,
-    width=320,
-    height=45,
-    placeholder_text="Enter GitHub username",
-    font=("Arial", 16)
+    width=320, # Width of the entry box.
+    height=45, # Height of the entry box.
+    placeholder_text="Enter GitHub username", # Placeholder text that appears when the entry box is empty.
+    font=("Arial", 16) # Font of the entry box.
 )
 username_entry.pack(pady=20)
 
@@ -111,7 +109,7 @@ search_button = ctk.CTkButton(
 )
 search_button.pack(pady=10)
 
-status_label = ctk.CTkLabel(
+status_label = ctk.CTkLabel( # Called down below if no username is entered or if the username is invalid.
     search_frame,
     text="",
     font=("Arial", 14),
@@ -131,7 +129,7 @@ dashboard_frame = ctk.CTkFrame(
     border_width=2
 )
 dashboard_frame.place(x=430, y=150)
-dashboard_frame.pack_propagate(False)
+dashboard_frame.pack_propagate(False) # Prevents the frame from shrinking to fit its contents.
 
 dashboard_title = ctk.CTkLabel(
     dashboard_frame,
@@ -165,12 +163,12 @@ result_title.pack(pady=25)
 
 # CLEAR OLD RESULTS
 def clear_results():
-    for widget in result_frame.winfo_children():
-        if widget != result_title:
+    for widget in result_frame.winfo_children(): # Gets all the widgets in the result frame.
+        if widget != result_title: # If the widget is not the result title, destroy it.
             widget.destroy()
 
-    for widget in dashboard_frame.winfo_children():
-        if widget != dashboard_title:
+    for widget in dashboard_frame.winfo_children(): # Gets all the widgets in the dashboard frame.
+        if widget != dashboard_title: # If the widget is not the dashboard title, destroy it.
             widget.destroy()
 
 
@@ -178,25 +176,22 @@ def clear_results():
 def search_github():
     clear_results()
 
-    username = username_entry.get().strip()
+    username = username_entry.get().strip() # Gets the username from the entry box and removes any leading or trailing whitespace.
 
-    if not username:
+    if not username: # Checks if a username has been entered since if there is none username comes back as false therefore if not username means if there is no username do this.
         status_label.configure(
             text="Please enter a GitHub username.",
             text_color="red"
         )
-        return
+        return # Stops the function from running if no username is entered.
 
-    status_label.configure(
-        text="Searching...",
-        text_color="white"
-    )
+
 
     try:
         response = requests.get(
             f"https://api.github.com/users/{username}",
-            timeout=10
-        )
+            timeout=10 # If the api takes longer than 10 seconds to respond, it will raise an exception.
+        ) 
 
         if response.status_code == 404:
             status_label.configure(
@@ -205,21 +200,21 @@ def search_github():
             )
             return
 
-        response.raise_for_status()
-        user_data = response.json()
+        response.raise_for_status() # If the api returns a status code other than 200, it will raise an exception.
+        user_data = response.json() # Turns the given data into a python dictionary.
 
         repos_response = requests.get(
             f"https://api.github.com/users/{username}/repos",
-            params={"per_page": 100, "sort": "updated"},
-            timeout=10
+            params={"per_page": 100, "sort": "updated"}, # Asks GitHub for up to 100 repositories per page, while "sort": "updated" sorts them by last updated, newest first.
+            timeout=10 # If the api takes longer than 10 seconds to respond, it will raise an exception.
         )
 
-        repos_response.raise_for_status()
+        repos_response.raise_for_status() # If the api returns a status code other than 200, it will raise an exception.
         repos = repos_response.json()
 
         # RIGHT PANEL: PROFILE DETAILS
         profile_details = [
-            ("Username", user_data.get("login", "N/A")),
+            ("Username", user_data.get("login", "N/A")), # The N/A is shown if the username is not found same goes for everything else here.
             ("Name", user_data.get("name") or "Not provided"),
             ("Followers", user_data.get("followers", 0)),
             ("Following", user_data.get("following", 0)),
@@ -229,15 +224,14 @@ def search_github():
             ("Avatar URL", user_data.get("avatar_url", "N/A"))
         ]
 
-        for label_text, value in profile_details:
+        for label_text, value in profile_details: # Loops through the profile details and creates a label for each one.
             label = ctk.CTkLabel(
                 result_frame,
-                text=f"{label_text}:\n{value}",
+                text=f"{label_text}:\n{value}", # Adds the category and value
                 font=("Arial", 14),
                 text_color="white",
-                wraplength=350,
-                justify="center",
-                cursor="hand2" if label_text == "Profile URL" else "arrow"
+                wraplength=350, # Wraps the text if it is too long
+                justify="center"
             )
             label.pack(pady=8)
 
@@ -256,29 +250,29 @@ def search_github():
 
 
         # CENTRE PANEL: REPOSITORY ANALYTICS
-        total_stars = sum(repo["stargazers_count"] for repo in repos)
-        total_forks = sum(repo["forks_count"] for repo in repos)
+        total_stars = sum(repo["stargazers_count"] for repo in repos) # Searches for all the stars on the repo list
+        total_forks = sum(repo["forks_count"] for repo in repos) # Searches for all the forks on the repo list
 
         analytics = [
-            f"Public repositories: {len(repos)}",
-            f"Total stars: {total_stars}",
-            f"Total forks: {total_forks}",
+            f"Public repositories: {len(repos)}", # Shows the number of public repositories
+            f"Total stars: {total_stars}", # Shows the total number of stars
+            f"Total forks: {total_forks}", # Shows the total number of forks
             "",
             "TOP STARRED REPOSITORIES"
         ]
 
         top_repos = sorted(
             repos,
-            key=lambda repo: repo["stargazers_count"],
+            key=lambda repo: repo["stargazers_count"], # Sorts repos from most to least stars. Sorted by making a function that returns the number of stars for each repo.
             reverse=True
         )[:5]
 
         for repo in top_repos:
             analytics.append(
-                f'{repo["name"]}  ⭐ {repo["stargazers_count"]}'
+                f'{repo["name"]}  ⭐ {repo["stargazers_count"]}' # Adds stats to a list for showcase.
             )
 
-        analytics.extend(["", "LANGUAGES USED"])
+        analytics.extend(["", "LANGUAGES USED"]) # Same use as append but with multiple items instead of 1
 
         languages = {}
 
@@ -286,34 +280,34 @@ def search_github():
             language = repo.get("language")
 
             if language:
-                languages[language] = languages.get(language, 0) + 1
+                languages[language] = languages.get(language, 0) + 1 # Checks if a language exists, if it does add 1 to the language count for every language in a repo.
 
         top_languages = sorted(
             languages.items(),
-            key=lambda item: item[1],
+            key=lambda item: item[1],  # Sorts languages by count. [1] is used to get the value since the store has a name; index 0 and a value; index 1.
             reverse=True
-        )[:8]
+        )[:8] # Get the first 8
 
         if top_languages:
             for language, count in top_languages:
-                analytics.append(f"{language}: {count} repositories")
+                analytics.append(f"{language}: {count} repositories") # Sends data for display.
         else:
-            analytics.append("No language data available.")
+            analytics.append("No language data available.") # If there are no languages print this.
 
-        for item in analytics:
+        for item in analytics:      # Displays the data.
             if item == "":
-                ctk.CTkLabel(
+                ctk.CTkLabel( # Display nothing if no data is found.
                     dashboard_frame,
                     text="",
                     height=5
                 ).pack()
             elif item in [
-                "TOP STARRED REPOSITORIES",
+                "TOP STARRED REPOSITORIES",        
                 "LANGUAGES USED"
             ]:
-                ctk.CTkLabel(
+                ctk.CTkLabel(    
                     dashboard_frame,
-                    text=item,
+                    text=item, # Display the data.
                     font=("Orbitron", 19),
                     text_color="#3B82F6"
                 ).pack(pady=(15, 8))
@@ -326,18 +320,18 @@ def search_github():
                     wraplength=620
                 ).pack(pady=5)
 
-        status_label.configure(
+        status_label.configure( # Shows status.
             text="Profile loaded successfully!",
             text_color="#3B82F6"
         )
 
-    except requests.exceptions.Timeout:
+    except requests.exceptions.Timeout: # If the request times out show an error.
         status_label.configure(
             text="Request timed out. Try again.",
             text_color="red"
         )
 
-    except requests.exceptions.RequestException:
+    except requests.exceptions.RequestException: # If api couldn't connect show an error
         status_label.configure(
             text="Could not connect to GitHub.",
             text_color="red"
@@ -346,8 +340,8 @@ def search_github():
 
 # ENTER KEY SEARCH
 username_entry.bind(
-    "<Return>",
-    lambda event: search_github()
+    "<Return>", # When enter is pressed
+    lambda event: search_github() # Call the search_github function
 )
 
-root.mainloop()
+root.mainloop() # Start the program.
